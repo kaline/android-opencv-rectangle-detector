@@ -11,8 +11,20 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -21,12 +33,41 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private static final String TAG="MainActivity";
     JavaCameraView javaCameraView;
     Mat mRgba;
+    //image holder
+    Mat bwIMG, hsvIMG, lrrIMG, urrIMG, dsIMG, usIMG, cIMG, hovIMG;
+    MatOfPoint2f approxCurve;
+    int threshold;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        //initialize treshold
+        threshold = 100;
+
+        javaCameraView = (JavaCameraView)findViewById(R.id.java_camera_view);
+        javaCameraView.setVisibility(SurfaceView.VISIBLE);
+        javaCameraView.setCvCameraViewListener(this);
+    }
+
 
     BaseLoaderCallback mLoaderCallBack = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
             switch(status){
                 case BaseLoaderCallback.SUCCESS:{
+
+                    Log.v("kaline-log", "Loader interface success");
+                    bwIMG = new Mat();
+                    dsIMG = new Mat();
+                    hsvIMG = new Mat();
+                    lrrIMG = new Mat();
+                    urrIMG = new Mat();
+                    usIMG = new Mat();
+                    cIMG = new Mat();
+                    hovIMG = new Mat();
+                    approxCurve = new MatOfPoint2f();
                     javaCameraView.enableView();
                     break;
                 }
@@ -39,18 +80,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     };
 
-    static{
 
-    }
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        javaCameraView = (JavaCameraView)findViewById(R.id.java_camera_view);
-        javaCameraView.setVisibility(SurfaceView.VISIBLE);
-        javaCameraView.setCvCameraViewListener(this);
-    }
 
     @Override
     protected void onPause(){
@@ -88,15 +119,97 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void onCameraViewStarted(int width, int height) {
         mRgba = new Mat(height, width, CvType.CV_8UC4);
 
+
+
+
     }
 
     @Override
     public void onCameraViewStopped() {
+        mRgba.release();
 
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return null;
+
+        Mat gray = inputFrame.gray();
+        Mat dst = inputFrame.rgba();
+
+        Imgproc.pyrDown(gray, dsIMG, new Size(gray.cols()/2, gray.rows()/2));
+        Imgproc.pyrUp(dsIMG, usIMG, gray.size());
+        Imgproc.Canny(usIMG, bwIMG, 0, threshold);
+
+        Imgproc.dilate(bwIMG, bwIMG, new Mat(), new Point(-1,1), 1);
+
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+
+        cIMG = bwIMG.clone();
+
+        Imgproc.findContours(cIMG, contours, hovIMG, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        for(MatOfPoint cnt : contours){
+
+
+            MatOfPoint2f curve = new MatOfPoint2f(cnt.toArray());
+            Imgproc.approxPolyDP(curve, approxCurve, 0.02 *Imgproc.arcLength(curve, true), true);
+
+            int numberVertices = (int)approxCurve.total();
+
+            double contourArea = Imgproc.contourArea(cnt);
+
+            if(Math.abs(contourArea) < 100){
+                continue;
+            }
+
+            //rectangle detected
+
+            if(numberVertices >= 4 && numberVertices <= 6 ){
+                List<Double> cos = new ArrayList<>();
+
+                for(int j = 2; j < numberVertices; j++) {
+                    cos.add(angle(approxCurve.toArray()[j % numberVertices], approxCurve.toArray()[j - 2], approxCurve.toArray()[j - 1]));
+                }
+
+                Collections.sort(cos);
+
+                double mincos = cos.get(0);
+                double maxcos = cos.get(cos.size() - 1);
+
+                if(numberVertices >= 4 || mincos >= -0.1 && maxcos <= 0.3){
+
+                    setLabel(dst, "X", cnt);
+                }
+            }
+        }
+
+
+        return dst;
+    }
+
+    private void setLabel(Mat im, String label, MatOfPoint contour) {
+
+        int fontFace = Core.FONT_HERSHEY_SIMPLEX;
+        double scale = 3; //0.4
+        int thickness = 3; // 1
+
+        int[] baseline = new int[1];
+
+        Size text = Core.getTextSize(label, fontFace, scale, thickness, baseline);
+
+        Rect r = Imgproc.boundingRect(contour);
+        Point pt = new Point(r.x + ((r.width - text.width) / 2),r.y + ((r.height + text.height) / 2));
+        Core.putText(im, label, pt, fontFace, scale, new Scalar(255, 0, 0), thickness);
+
+    }
+
+    private static Double angle(Point point1, Point point2, Point point0) {
+        double dx1 = point1.x - point0.x;
+        double dy1 = point1.y - point0.y;
+        double dx2 = point2.x = point0.x;
+        double dy2 = point2.y - point0.y;
+
+        return (dx1 * dx2 + dy1 * dy2)/Math.sqrt((dx1 * dx1 + dy1 *dy1) *(dy1 * dy1 + dy2 *dy2) +1e-10);
+
     }
 }
