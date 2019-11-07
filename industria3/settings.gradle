@@ -1,0 +1,3 @@
+include ':app'
+rootProject.name='industria3'
+include ':openCVLibrary343'
