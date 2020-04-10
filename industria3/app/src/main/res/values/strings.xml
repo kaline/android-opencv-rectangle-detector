@@ -1,0 +1,78 @@
+<resources>
+    <!--Tela Inicial-->
+
+    <string name="Industria4">Industria4.0</string>
+    <string name="title_activity_about">AboutActivity</string>
+    <string name="Detecçao">Detectar</string>
+
+    <!--Menu Drawer-->
+
+    <string name="menu_drawer_sobre">Sobre</string>
+    <string name="menu_drawer_voltar">Voltar</string>
+    <string name="menu_drawer_conta">Minha Conta</string>
+    <string name="toggle_open">Open</string>
+    <string name="toggle_close">Close</string>
+
+
+    <!--Dados do Usuario-->
+
+    <string name="user_register_cadastrar">CADASTRAR</string>
+    <string name="user_register_senha">Senha</string>
+    <string name="user_register_email">Email</string>
+    <string name="user_register_nome">Nome</string>
+    <string name="user_register_title">Cadastro de Usuario</string>
+
+<!--Login-->
+    <string name="user_login_esqueceusenha">Esqueceu sua senha?</string>
+    <string name="user_login_entrar">ENTRAR</string>
+    <string name="user_login_nao_cadastro">Nao tem cadastro?</string>
+    <string name="user_login_cadastre_se_aqui">Cadastre Aqui</string>
+    <string name="user_login_title">Login</string>
+
+<!--Perfil-->
+    <string name="user_profile_title">Perfil</string>
+    <string name="user_profile_sobrenome">Sobrenome</string>
+    <string name="user_profile_endereço">Endereço</string>
+    <string name="user_profile_rua_avenida">Endereço</string>
+    <string name="user_profile_numero">Numero</string>
+    <string name="user_profile_complemento">Complemento</string>
+    <string name="user_profile_cidade">Cidade</string>
+    <string name="user_profile_cep">CEP</string>
+    <string name="user_profile_atualizar">Atualizar</string>
+
+    <!--Perfil de Usuario-->
+    <string-array name="states">
+        <item>Acre (AC)</item>
+        <item>Alagoas (AL)</item>
+        <item>Amapá (AP)</item>
+        <item>Amazonas (AM)</item>
+        <item>Bahia (BA)</item>
+        <item>Ceará (CE)</item>
+        <item>Distrito Federal (DF)</item>
+        <item>Espírito Santo (ES)</item>
+        <item>Goiás (GO)</item>
+        <item>Maranhão (MA)</item>
+        <item>Mato Grosso (MT)</item>
+        <item>Mato Grosso do Sul (MS)</item>
+        <item>Minas Gerais (MG)</item>
+        <item>Pará (PA)</item>
+        <item>Paraíba (PB)</item>
+        <item>Paraná (PR)</item>
+        <item>Pernambuco (PE)</item>
+        <item>Piauí (PI)</item>
+        <item>Rio de Janeiro (RJ)</item>
+        <item>Rio Grande do Norte (RN)</item>
+        <item>Rio Grande do Sul (RS)</item>
+        <item>Rondônia (RO)</item>
+        <item>Roraima (RR)</item>
+        <item>Santa Catarina (SC)</item>
+        <item>São Paulo (SP)</item>
+        <item>Sergipe (SE)</item>
+        <item>Tocantins (TO)</item>
+
+    </string-array>
+
+
+
+
+</resources>
